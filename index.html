@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhysioSense - Exercise Tracker</title>
+    <link rel="stylesheet" href="static/styles.css">
+
+    <!-- MediaPipe Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">PhysioSense</div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active" data-page="home">
+                <span class="nav-icon">🏠</span><span class="nav-text">Home</span>
+            </a>
+            <a href="#" class="nav-link" data-page="exercises">
+                <span class="nav-icon">💪</span><span class="nav-text">Exercises</span>
+            </a>
+            <a href="#" class="nav-link" data-page="history">
+                <span class="nav-icon">📊</span><span class="nav-text">Session History</span>
+            </a>
+            <a href="#" class="nav-link">
+                <span class="nav-icon">⚙️</span><span class="nav-text">Settings</span>
+            </a>
+        </div>
+        <div class="nav-right">
+            <button id="login-btn" class="btn btn-outline btn-nav" data-logged="false">Login</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- HOME PAGE -->
+        <div id="home-page" class="page active">
+            <header class="welcome-header">
+                <h1>Welcome to PhysioSense</h1>
+                <p class="subtitle">AI-powered physiotherapy exercises designed with accessibility in mind. Start your
+                    journey to better mobility with real-time guidance and feedback.</p>
+            </header>
+
+            <div class="home-grid">
+                <!-- Camera Preview -->
+                <div class="camera-preview-section">
+                    <div class="camera-preview-box">
+                        <div class="camera-icon">📷</div>
+                        <p class="camera-status">Camera Ready ⓘ</p>
+                        <p class="camera-instruction">Position yourself in frame to begin</p>
+                    </div>
+                </div>
+
+                <!-- Getting Started Guide -->
+                <div class="getting-started-section">
+                    <h2>ⓘ Getting Started</h2>
+                    <ol class="instruction-list">
+                        <li>Allow camera access when prompted by your browser</li>
+                        <li>Position yourself 3-5 feet from the camera</li>
+                        <li>Ensure your full body (or upper body for seated exercises) is visible</li>
+                        <li>Choose an exercise that matches your mobility level from the Exercises page</li>
+                        <li>Press the Start button when ready to begin</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXERCISES PAGE -->
+        <div id="exercises-page" class="page">
+            <header class="welcome-header">
+                <h1>Exercise Library</h1>
+                <p class="subtitle">Select an exercise to begin your session</p>
+            </header>
+
+            <!-- Exercise Selection -->
+            <section class="exercise-selection">
+                <div class="exercise-grid">
+                    <!-- Seated Arm Raises -->
+                    <div class="exercise-card" data-exercise="seated-arm-raises">
+                        <div class="exercise-icon">💪</div>
+                        <div class="exercise-info">
+                            <h3>Arm Raises <span class="badge badge-seated">✓ Seated / Standing</span></h3>
+                            <p class="exercise-description">Lateral shoulder abduction – raise both arms to the sides</p>
+                            <div class="exercise-meta">
+                                <span class="exercise-target">Target: 10 reps</span>
+                                <span class="badge badge-difficulty">beginner</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overhead Hold -->
+                    <div class="exercise-card" data-exercise="overhead-hold">
+                        <div class="exercise-icon">🙌</div>
+                        <div class="exercise-info">
+                            <h3>Overhead Hold <span class="badge badge-seated">✓ Seated / Standing</span></h3>
+                            <p class="exercise-description">Raise both arms overhead and hold steady for 5 seconds</p>
+                            <div class="exercise-meta">
+                                <span class="exercise-target">Target: 5 holds × 5 sec</span>
+                                <span class="badge badge-difficulty">intermediate</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sit-to-Stand Test -->
+                    <div class="exercise-card" data-exercise="sit-to-stand">
+                        <div class="exercise-icon">🪑</div>
+                        <div class="exercise-info">
+                            <h3>Sit-to-Stand Test <span class="badge badge-seated">✓ Chair Required</span></h3>
+                            <p class="exercise-description">Stand up and sit down – elderly rehabilitation assessment</p>
+                            <div class="exercise-meta">
+                                <span class="exercise-target">Target: 5-15 reps</span>
+                                <span class="badge badge-difficulty">elderly rehab</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bicep Curl -->
+                    <div class="exercise-card" data-exercise="bicep-curl">
+                        <div class="exercise-icon">💪</div>
+                        <div class="exercise-info">
+                            <h3>Bicep Curl <span class="badge badge-seated">✓ Seated / Standing</span></h3>
+                            <p class="exercise-description">Elbow flexion: curl your forearm toward your shoulder</p>
+                            <div class="exercise-meta">
+                                <span class="exercise-target">Target: 10 reps</span>
+                                <span class="badge badge-difficulty">beginner</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SESSION HISTORY PAGE -->
+        <div id="history-page" class="page">
+            <header class="welcome-header">
+                <h1>Session History</h1>
+                <p class="subtitle">Review previous exercise sessions</p>
+            </header>
+
+            <!-- Progress Chart -->
+            <div class="exercise-selection" style="margin-bottom: 2rem;">
+                <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <!-- Filter Buttons -->
+                    <div style="text-align: center; margin-bottom: 1.5rem; display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
+                        <button class="chart-filter-btn" data-filter="seated-arm-raises" style="margin: 0 0.5rem; padding: 0.5rem 1.5rem; border: 2px solid #28a745; background: white; color: #28a745; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                            Arm Raises Only
+                        </button>
+                        <button class="chart-filter-btn" data-filter="overhead-hold" style="margin: 0 0.5rem; padding: 0.5rem 1.5rem; border: 2px solid #ff9800; background: white; color: #ff9800; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                            Overhead Hold Only
+                        </button>
+                        <button class="chart-filter-btn" data-filter="sit-to-stand" style="margin: 0 0.5rem; padding: 0.5rem 1.5rem; border: 2px solid #ff5252; background: white; color: #ff5252; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                            Sit-to-Stand Only
+                        </button>
+                        <span id="sts-progress-note" style="display:inline-block;color:#2e7d32;font-weight:700;margin-left:6px;">Progress = Moving toward the Green Zone</span>
+                    </div>
+                    <canvas id="angleChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Session Data Table -->
+            <div class="exercise-selection">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Exercise</th>
+                            <th>Date</th>
+                            <th>Duration</th>
+                            <th>Reps</th>
+                            <th>Left Max</th>
+                            <th>Right Max</th>
+                            <th>Target</th>
+                            <th>Difficulty</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <tr>
+                            <td colspan="8">No sessions recorded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- EXERCISE PAGE -->
+        <div id="exercise-page" class="page">
+            <div class="exercise-header">
+                <button class="back-button" id="back-to-home">← Back</button>
+                <h2 id="exercise-title">Seated Arm Raises</h2>
+                <p id="exercise-subtitle">Gentle shoulder mobility exercise performed while seated</p>
+            </div>
+
+            <div class="exercise-layout">
+                <!-- Camera Feed Section -->
+                <div class="camera-section">
+                    <div class="video-container">
+                        <video id="webcam" autoplay playsinline></video>
+                        <canvas id="output-canvas"></canvas>
+                    </div>
+
+                    <!-- Difficulty Selector -->
+                    <div class="difficulty-selector">
+                        <label for="difficulty-select">Difficulty:</label>
+                        <select id="difficulty-select">
+                            <option value="1">1 - Easy (30°)</option>
+                            <option value="2" selected>2 - Medium (60°)</option>
+                            <option value="3">3 - Hard (90°)</option>
+                        </select>
+                        <span id="difficulty-display">Target: 60°</span>
+                    </div>
+
+                    <button id="start-btn" class="btn btn-start">▶ Start Exercise</button>
+                    <button id="stop-btn" class="btn btn-stop" style="display:none;">⏹ Stop Exercise</button>
+                </div>
+
+                <!-- Progress & Feedback Section -->
+                <div class="progress-section">
+                    <div class="progress-card">
+                        <h3>⭕ Repetitions</h3>
+                        <div class="rep-counter" id="rep-counter">0 / 10</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="rep-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="progress-card">
+                        <h3>⏱️ Time Elapsed</h3>
+                        <div class="timer-display" id="session-duration">00:00</div>
+                    </div>
+
+                    <!-- Left Progress Ring -->
+                    <div class="progress-card" id="left-progress-card">
+                        <h3>Left Shoulder</h3>
+                        <div class="progress-container">
+                            <svg class="progress-ring" width="150" height="150">
+                                <circle class="progress-ring-circle-bg" cx="75" cy="75" r="60"></circle>
+                                <circle class="progress-ring-circle" id="left-progress-circle" cx="75" cy="75" r="60">
+                                </circle>
+                            </svg>
+                            <div class="progress-text">
+                                <span class="angle-value" id="left-angle">0°</span>
+                                <span class="progress-percent" id="left-percent">0%</span>
+                            </div>
+                        </div>
+                        <div class="angle-label">Current Angle</div>
+                        <div class="max-angle" id="left-max">Max: 0°</div>
+                    </div>
+
+                    <!-- Right Progress Ring -->
+                    <div class="progress-card" id="right-progress-card">
+                        <h3>Right Shoulder</h3>
+                        <div class="progress-container">
+                            <svg class="progress-ring" width="150" height="150">
+                                <circle class="progress-ring-circle-bg" cx="75" cy="75" r="60"></circle>
+                                <circle class="progress-ring-circle" id="right-progress-circle" cx="75" cy="75" r="60">
+                                </circle>
+                            </svg>
+                            <div class="progress-text">
+                                <span class="angle-value" id="right-angle">0°</span>
+                                <span class="progress-percent" id="right-percent">0%</span>
+                            </div>
+                        </div>
+                        <div class="angle-label">Current Angle</div>
+                        <div class="max-angle" id="right-max">Max: 0°</div>
+                    </div>
+
+                    <!-- Real-Time Feedback -->
+                    <div class="feedback-card">
+                        <h3>📊 Real-Time Feedback</h3>
+                        <div id="feedback-content" class="feedback-placeholder">
+                            <p>ⓘ Feedback will appear here during your exercise</p>
+                        </div>
+                        <div id="feedback-active" class="feedback-active" style="display:none;">
+                            <div class="feedback-item" id="single-feedback-item" style="display:none;justify-content:center;">
+                                <span class="feedback-text" id="single-feedback">Ready</span>
+                            </div>
+                            <div class="feedback-item" id="left-feedback-item">
+                                <span class="feedback-label">Shoulder:</span>
+                                <span class="feedback-text" id="left-feedback">Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bicep Curl Card (Angle-based) -->
+                    <div class="progress-card" id="bicep-progress-card" style="display:none;">
+                        <h3>💪 Bicep Curl</h3>
+                        <div class="rep-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <div style="color:#666;font-weight:600;">Reps</div>
+                            <div id="bicep-reps" style="font-size:28px;font-weight:700;color:#28a745;">0</div>
+                        </div>
+
+                        <div class="stage-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <div style="color:#666;font-weight:600;">Stage</div>
+                            <div id="bicep-stage" style="font-weight:700;color:#4338ca;background:#eef2ff;padding:6px 10px;border-radius:6px;">UP</div>
+                        </div>
+
+                        <div class="progress-row" style="display:flex;align-items:center;gap:12px;">
+                            <div style="flex:1;">
+                                <div class="progress-bar" style="height:12px;">
+                                    <div id="bicep-progress-inner" class="progress-fill" style="width:0%"></div>
+                                </div>
+                            </div>
+                            <div id="bicep-angle" style="width:56px;text-align:right;font-weight:600;color:#374151;">0°</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Complete Modal -->
+            <div id="session-complete-modal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <h2>✅ Session Complete!</h2>
+                    <div class="session-summary">
+                        <p><strong>Duration:</strong> <span id="final-duration">00:00</span></p>
+                        <p><strong>Total Reps:</strong> <span id="final-reps">0</span></p>
+                        <p><strong>Left Max:</strong> <span id="final-left-max">0°</span></p>
+                        <p><strong>Right Max:</strong> <span id="final-right-max">0°</span></p>
+                    </div>
+                    <button id="save-session-btn" class="btn btn-primary">💾 Save Session</button>
+                    <button id="close-modal-btn" class="btn btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal (Login / Register) -->
+    <div id="login-modal" class="modal" style="display:none;">
+        <div class="modal-content auth-modal">
+            <div class="auth-left" style="display:flex;align-items:center;justify-content:center;">
+                <img src="static/img/image.png" alt="logo" class="auth-logo-rect" />
+            </div>
+
+            <div class="auth-right">
+                <button id="close-login-modal" class="modal-close">✕</button>
+                <h2 id="auth-title">Login</h2>
+                <form id="auth-form" class="auth-form">
+                    <div class="auth-field">
+                        <label for="auth-username">Username</label>
+                        <input id="auth-username" name="username" type="text" autocomplete="username" required />
+                    </div>
+                    <div class="auth-field">
+                        <label for="auth-password">Password</label>
+                        <input id="auth-password" name="password" type="password" autocomplete="current-password" required />
+                    </div>
+
+                    <div class="auth-actions">
+                        <button id="auth-submit" type="submit" class="btn btn-primary">Login</button>
+                        <button type="button" id="auth-toggle-register" class="btn btn-small btn-outline">Register</button>
+                    </div>
+                    <div id="auth-error" class="auth-error" style="display:none;"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>⚠️ Data exported from this tool is for physiotherapist review only.</p>
+        <p>PhysioSense © 2025 - Academic Prototype</p>
+    </footer>
+
+    <!-- Main Application Script (modular) -->
+    <script type="module" src="static/js/main.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js"></script>
+</body>
+
+</html>
