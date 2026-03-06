@@ -6,7 +6,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
-app = Flask(__name__, static_folder=".", template_folder=".")
+app = Flask(__name__, static_url_path='', static_folder='.', template_folder='.')
 
 # Secret key for session cookies (override in production via env var)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
