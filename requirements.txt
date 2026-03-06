@@ -1,5 +1,6 @@
 flask
 flask-login
+werkzeug
 mediapipe
 opencv-python-headless
 gunicorn
